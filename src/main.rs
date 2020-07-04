@@ -55,7 +55,7 @@ fn main() {
         )
         .get_matches();
 
-    let probes : Option<Vec<_>> = command.values_of("probes").map(|x|x.collect());
+    let probes: Option<Vec<_>> = command.values_of("probes").map(|x| x.collect());
     let run_default = !command.is_present("suppress_default");
     let timeout = command.value_of("timeout").unwrap().parse::<u32>();
     let concurrency = command.value_of("concurrency").unwrap().parse::<u32>();
