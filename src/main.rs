@@ -1,0 +1,65 @@
+/// Read list of domain names from the command line or a file
+/// Read a list of probes 
+/// protocol:port from the command line using the -p flag
+/// Use -nd flag to specify no defaults
+/// Timeout -t
+/// Concurrency -c
+/// 
+/// Future add socks and alternate dns support
+ extern crate clap;
+ 
+use clap::{App, Arg};
+use std::time::Duration;
+
+fn main() {
+    let command = App::new("hprobe")
+    .version("0.1")
+    .about("A fast http probe")
+    .arg(
+        Arg::with_name("probes")
+            .short("p")
+            .long("probe")
+            .value_name("PROBE")
+            .help("protocol port pair <http|https>:<port>")
+            .takes_value(true)
+            .multiple(true)
+            .required(false)
+    ).arg(
+        Arg::with_name("suppress_default")
+            .short("s")
+            .long("suppress_default")
+            .value_name("SUPPRESS")
+            .help("do not process the default http and https ports")
+            .takes_value(false)
+            .required(false)
+    ).arg(
+        Arg::with_name("timeout")
+            .short("t")
+            .long("timeout")
+            .value_name("TIMEOUT")
+            .help("The timeout for the connect phase (ms)")
+            .takes_value(true)
+            .required(false)
+            .default_value("1000")
+    ).arg(
+        Arg::with_name("concurrency")
+        .short("c")
+        .long("concurrency")
+        .value_name("CONCURRENCY")
+        .help("The number of concurrent requests")
+        .takes_value(true)
+        .required(false)
+        .default_value("20")
+    )
+    .get_matches();
+
+    let probes: Vec<_> = command.values_of("probes").unwrap().collect();
+    let run_default = !command.is_present("suppress_default");
+    let timeout = command.value_of("timeout");
+    let concurrency = command.value_of("concurrency");
+
+    
+
+    println!("probes {:?}, run default {:?}, timeout {:?}, concurrency {:?}", probes, run_default, timeout, concurrency);
+ 
+}
