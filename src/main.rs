@@ -7,13 +7,15 @@
 ///
 /// Future add socks and alternate dns support
 extern crate clap;
+extern crate futures;
 
 use clap::{App, Arg};
+use futures::{stream, StreamExt};
 use reqwest::Client;
 use std::io::{self, BufRead};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() {
     let command = App::new("hprobe")
         .version("0.1")
         .about("A fast http probe")
@@ -71,13 +73,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::builder().build().unwrap();
 
     let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-        let line = line.unwrap();
-        match client.get(&line).send().await {
-            Err(e) => println!("Error: {:?}", e),
-            Ok(_) => println!("Connected: {:?}", line),
-        }
-    }
+    let result = stream::iter(stdin.lock().lines())
+        .map(|line| {
+            let line = line.unwrap();
+            let client = &client;
+            async move { client.get(&line).send().await.map(|r| (line, r)) }
+        })
+        .buffer_unordered(2);
 
-    Ok(())
+    result
+        .for_each(|b| async {
+            match b {
+                Ok((r, _res)) => println!("{:?}", r),
+                Err(e) => eprintln!("Got an error: {}", e),
+            }
+        })
+        .await;
 }
