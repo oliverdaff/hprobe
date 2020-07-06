@@ -9,8 +9,8 @@
 extern crate clap;
 
 use clap::{App, Arg};
-use std::io::{self, BufRead};
 use reqwest::Client;
+use std::io::{self, BufRead};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -71,15 +71,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::builder().build().unwrap();
 
     let stdin = io::stdin();
-    for line in stdin.lock().lines(){
+    for line in stdin.lock().lines() {
         let line = line.unwrap();
         match client.get(&line).send().await {
             Err(e) => println!("Error: {:?}", e),
             Ok(_) => println!("Connected: {:?}", line),
         }
-    };
+    }
 
     Ok(())
 }
-
-
