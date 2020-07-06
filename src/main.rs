@@ -9,8 +9,11 @@
 extern crate clap;
 
 use clap::{App, Arg};
+use std::io::{self, BufRead};
+use reqwest::Client;
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let command = App::new("hprobe")
         .version("0.1")
         .about("A fast http probe")
@@ -64,4 +67,19 @@ fn main() {
         "probes {:?}, run default {:?}, timeout {:?}, concurrency {:?}",
         probes, run_default, timeout, concurrency
     );
+
+    let client = Client::builder().build().unwrap();
+
+    let stdin = io::stdin();
+    for line in stdin.lock().lines(){
+        let line = line.unwrap();
+        match client.get(&line).send().await {
+            Err(e) => println!("Error: {:?}", e),
+            Ok(_) => println!("Connected: {:?}", line),
+        }
+    };
+
+    Ok(())
 }
+
+
