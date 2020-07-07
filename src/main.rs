@@ -111,7 +111,10 @@ async fn main() {
         probes.extend_from_slice(&defatul_probes)
     }
 
-    let client = Client::builder().timeout(Duration::from_secs(1)).build().unwrap();
+    let client = Client::builder()
+        .timeout(Duration::from_secs(1))
+        .build()
+        .unwrap();
 
     let stdin = io::stdin();
     let result = stream::iter(stdin.lock().lines())
@@ -161,10 +164,8 @@ fn probe_to_url(host: &str, probe: &Probe) -> String {
 /// Default is to use http:80 and https:443
 fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
     lazy_static! {
-        static ref RE: Regex = Regex::new(
-            r"(http|https):\b([1-9]\d{0,3}|[1-6][0-5][0-5][0-3][0-5])\b"
-        )
-        .unwrap();
+        static ref RE: Regex =
+            Regex::new(r"(http|https):\b([1-9]\d{0,3}|[1-6][0-5][0-5][0-3][0-5])\b").unwrap();
     }
     let (probes, errors): (Vec<_>, Vec<_>) = probes
         .iter()
@@ -188,7 +189,6 @@ fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
                 println!("{:?}", RE.captures(p));
                 Err(format!("Error parsing probe: {}", p))
             }
-
         })
         .partition(Result::is_ok);
     let probes: Vec<_> = probes.into_iter().map(Result::unwrap).collect();
