@@ -11,14 +11,14 @@ extern crate futures;
 use regex::Regex;
 
 use clap::{App, Arg};
-use reqwest::Client;
-use std::io::{self, BufRead};
 use futures::{stream, StreamExt};
 use lazy_static::lazy_static;
+use reqwest::Client;
+use std::io::{self, BufRead};
 
 type Port = u16;
 #[derive(Debug, Copy, Clone)]
-enum Protocol{
+enum Protocol {
     Http,
     Https,
 }
@@ -26,16 +26,21 @@ enum Protocol{
 #[derive(Debug, Copy, Clone)]
 struct Probe {
     port: Port,
-    protocol: Protocol
+    protocol: Protocol,
 }
-
 
 #[tokio::main]
 async fn main() {
     let defatul_probes: Vec<Probe> = vec![
-        Probe{protocol : Protocol::Http, port: 80},
-        Probe{protocol : Protocol::Https, port: 443},
-        ];
+        Probe {
+            protocol: Protocol::Http,
+            port: 80,
+        },
+        Probe {
+            protocol: Protocol::Https,
+            port: 443,
+        },
+    ];
 
     let command = App::new("hprobe")
         .version("0.1")
@@ -93,18 +98,17 @@ async fn main() {
 
     let (mut probes, errors) = match probe_args {
         Some(p) => parse_probes(p),
-        None => (vec![], vec![])
+        None => (vec![], vec![]),
     };
 
     if !errors.is_empty() {
         println!("Invalid Probe arguments {:?}", errors);
-        return
+        return;
     }
 
     if run_default {
         probes.extend_from_slice(&defatul_probes)
     }
-
 
     let client = Client::builder().build().unwrap();
 
@@ -134,10 +138,22 @@ async fn main() {
 
 fn probe_to_url(host: &str, probe: &Probe) -> String {
     match probe {
-        Probe{protocol: Protocol::Http, port} if port == &80 => format!("http://{}", host),
-        Probe{protocol: Protocol::Http, port} => format!("http://{}:{}", host, port),
-        Probe{protocol: Protocol::Https, port}if port == &443 => format!("https://{}", host ),
-        Probe{protocol: Protocol::Https, port} => format!("https://{}:{}", host, port),
+        Probe {
+            protocol: Protocol::Http,
+            port,
+        } if port == &80 => format!("http://{}", host),
+        Probe {
+            protocol: Protocol::Http,
+            port,
+        } => format!("http://{}:{}", host, port),
+        Probe {
+            protocol: Protocol::Https,
+            port,
+        } if port == &443 => format!("https://{}", host),
+        Probe {
+            protocol: Protocol::Https,
+            port,
+        } => format!("https://{}:{}", host, port),
     }
 }
 
@@ -147,21 +163,30 @@ fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
         static ref RE: Regex = Regex::new(
             r"
             (http|https):\b([1-9]\d{0,3}|[1-6][0-5][0-5][0-3][0-5])\b
-            ").unwrap();
+            "
+        )
+        .unwrap();
     }
-    let (probes, errors): (Vec<_>, Vec<_>) = probes.iter().map(|p| {
-      match RE.captures(p){
-          Some(cap) => {
-            let groups = (cap.get(1), cap.get(2) );
-            match groups {
-                (Some(prot), Some(port)) if prot.as_str() == "http" => Ok(Probe{protocol : Protocol::Http, port : port.as_str().parse().unwrap()}),
-                (Some(prot), Some(port)) if prot.as_str() == "https" => Ok(Probe{protocol : Protocol::Https, port : port.as_str().parse().unwrap()}),
-                _ => Err(format!("Error parsing probe: {}", p))
+    let (probes, errors): (Vec<_>, Vec<_>) = probes
+        .iter()
+        .map(|p| match RE.captures(p) {
+            Some(cap) => {
+                let groups = (cap.get(1), cap.get(2));
+                match groups {
+                    (Some(prot), Some(port)) if prot.as_str() == "http" => Ok(Probe {
+                        protocol: Protocol::Http,
+                        port: port.as_str().parse().unwrap(),
+                    }),
+                    (Some(prot), Some(port)) if prot.as_str() == "https" => Ok(Probe {
+                        protocol: Protocol::Https,
+                        port: port.as_str().parse().unwrap(),
+                    }),
+                    _ => Err(format!("Error parsing probe: {}", p)),
+                }
             }
-          },
-          None => Err(format!("Error parsing probe: {}", p))
-      }
-    }).partition(Result::is_ok);
+            None => Err(format!("Error parsing probe: {}", p)),
+        })
+        .partition(Result::is_ok);
     let probes: Vec<_> = probes.into_iter().map(Result::unwrap).collect();
     let errors: Vec<_> = errors.into_iter().map(Result::unwrap_err).collect();
     (probes, errors)
