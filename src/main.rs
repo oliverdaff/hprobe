@@ -15,6 +15,7 @@ use futures::{stream, StreamExt};
 use lazy_static::lazy_static;
 use reqwest::Client;
 use std::io::{self, BufRead};
+use std::time::Duration;
 
 type Port = u16;
 #[derive(Debug, Copy, Clone)]
@@ -110,7 +111,7 @@ async fn main() {
         probes.extend_from_slice(&defatul_probes)
     }
 
-    let client = Client::builder().build().unwrap();
+    let client = Client::builder().timeout(Duration::from_secs(1)).build().unwrap();
 
     let stdin = io::stdin();
     let result = stream::iter(stdin.lock().lines())
@@ -161,9 +162,7 @@ fn probe_to_url(host: &str, probe: &Probe) -> String {
 fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
     lazy_static! {
         static ref RE: Regex = Regex::new(
-            r"
-            (http|https):\b([1-9]\d{0,3}|[1-6][0-5][0-5][0-3][0-5])\b
-            "
+            r"(http|https):\b([1-9]\d{0,3}|[1-6][0-5][0-5][0-3][0-5])\b"
         )
         .unwrap();
     }
@@ -172,6 +171,7 @@ fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
         .map(|p| match RE.captures(p) {
             Some(cap) => {
                 let groups = (cap.get(1), cap.get(2));
+                println!("{:?}", groups);
                 match groups {
                     (Some(prot), Some(port)) if prot.as_str() == "http" => Ok(Probe {
                         protocol: Protocol::Http,
@@ -184,7 +184,11 @@ fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
                     _ => Err(format!("Error parsing probe: {}", p)),
                 }
             }
-            None => Err(format!("Error parsing probe: {}", p)),
+            None => {
+                println!("{:?}", RE.captures(p));
+                Err(format!("Error parsing probe: {}", p))
+            }
+
         })
         .partition(Result::is_ok);
     let probes: Vec<_> = probes.into_iter().map(Result::unwrap).collect();
