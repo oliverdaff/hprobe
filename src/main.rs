@@ -1,11 +1,4 @@
 /// Read list of domain names from the command line or a file
-/// Read a list of probes
-/// protocol:port from the command line using the -p flag
-/// Use -nd flag to specify no defaults
-/// Timeout -t
-/// Concurrency -c
-///
-/// Future add socks and alternate dns support
 extern crate clap;
 extern crate futures;
 use regex::Regex;
@@ -99,7 +92,7 @@ async fn main() {
                 "-c --concurrency parameter was not a integer: {}",
                 concurrency
             );
-            return;
+            std::process::exit(1);
         }
     };
 
@@ -110,26 +103,20 @@ async fn main() {
 
     if !errors.is_empty() {
         println!("Invalid Probe arguments {:?}", errors);
-        return;
+        std::process::exit(1);
     }
 
     let timeout_duration = match timeout.parse::<u64>().map(Duration::from_millis) {
         Ok(t) => t,
         Err(_) => {
             println!("-t --timeout parameter was not a number: {}", timeout);
-            return;
+            std::process::exit(1);
         }
     };
 
     if run_default {
         probes.extend_from_slice(&defatul_probes)
     }
-
-    println!(
-        "Running with timeout {} and concurrency {}",
-        timeout_duration.as_millis(),
-        concurrency_amount
-    );
 
     let client = Client::builder()
         .connect_timeout(timeout_duration)
@@ -192,7 +179,6 @@ fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
         .map(|p| match RE.captures(p) {
             Some(cap) => {
                 let groups = (cap.get(1), cap.get(2));
-                println!("{:?}", groups);
                 match groups {
                     (Some(prot), Some(port)) if prot.as_str() == "http" => Ok(Probe {
                         protocol: Protocol::Http,
