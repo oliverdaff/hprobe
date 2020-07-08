@@ -89,13 +89,19 @@ async fn main() {
 
     let probe_args: Option<Vec<_>> = command.values_of("probes").map(|x| x.collect());
     let run_default = !command.is_present("suppress_default");
-    let timeout = command.value_of("timeout").unwrap().parse::<u32>();
-    let concurrency = command.value_of("concurrency").unwrap().parse::<u32>();
+    let timeout = command.value_of("timeout").unwrap();
+    let concurrency = command.value_of("concurrency").unwrap();
 
-    println!(
-        "probes {:?}, run default {:?}, timeout {:?}, concurrency {:?}",
-        probe_args, run_default, timeout, concurrency
-    );
+    let concurrency_amount = match concurrency.parse::<usize>() {
+        Ok(c) => c,
+        Err(_e) => {
+            println!(
+                "-c --concurrency parameter was not a integer: {}",
+                concurrency
+            );
+            return;
+        }
+    };
 
     let (mut probes, errors) = match probe_args {
         Some(p) => parse_probes(p),
@@ -107,14 +113,25 @@ async fn main() {
         return;
     }
 
+    let timeout_duration = match timeout.parse::<u64>().map(Duration::from_millis) {
+        Ok(t) => t,
+        Err(_) => {
+            println!("-t --timeout parameter was not a number: {}", timeout);
+            return;
+        }
+    };
+
     if run_default {
         probes.extend_from_slice(&defatul_probes)
     }
 
-    let client = Client::builder()
-        .timeout(Duration::from_secs(1))
-        .build()
-        .unwrap();
+    println!(
+        "Running with timeout {} and concurrency {}",
+        timeout_duration.as_millis(),
+        concurrency_amount
+    );
+
+    let client = Client::builder().timeout(timeout_duration).build().unwrap();
 
     let stdin = io::stdin();
     let result = stream::iter(stdin.lock().lines())
@@ -128,7 +145,7 @@ async fn main() {
             let client = &client;
             async move { client.get(&line).send().await.map(|r| (line, r)) }
         })
-        .buffer_unordered(10);
+        .buffer_unordered(concurrency_amount);
 
     result
         .for_each(|b| async {
