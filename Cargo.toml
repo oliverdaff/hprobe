@@ -11,3 +11,9 @@ tokio = { version = "0.2", features = ["full"] }
 futures = "0.3"
 lazy_static = { version = "1.4"}
 regex = "1"
+
+[profile.release]
+opt-level = 'z'  # Optimize for size.
+lto = true
+codegen-units = 1
+panic = 'abort'

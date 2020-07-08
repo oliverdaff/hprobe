@@ -124,20 +124,16 @@ async fn main() {
         .unwrap();
 
     let stdin = io::stdin();
-    let result = stream::iter(stdin.lock().lines())
+    stream::iter(stdin.lock().lines())
         .flat_map(|line| {
-            let probes = &probes;
             let line = line.unwrap();
-            stream::iter(probes).map(move |probe| probe_to_url(&line, probe))
+            stream::iter(&probes).map(move |probe| probe_to_url(&line, probe))
         })
         .map(|line| {
-            let line = line;
             let client = &client;
             async move { client.get(&line).send().await.map(|r| (line, r)) }
         })
-        .buffer_unordered(concurrency_amount);
-
-    result
+        .buffer_unordered(concurrency_amount)
         .for_each(|b| async {
             match b {
                 Ok((r, _res)) => println!("{:?}", r),
@@ -152,19 +148,23 @@ fn probe_to_url(host: &str, probe: &Probe) -> String {
         Probe {
             protocol: Protocol::Http,
             port,
-        } if port == &80 => format!("http://{}", host),
-        Probe {
-            protocol: Protocol::Http,
-            port,
-        } => format!("http://{}:{}", host, port),
-        Probe {
-            protocol: Protocol::Https,
-            port,
-        } if port == &443 => format!("https://{}", host),
+        } => {
+            if port == &80 {
+                format!("http://{}", host)
+            } else {
+                format!("http://{}:{}", host, port)
+            }
+        }
         Probe {
             protocol: Protocol::Https,
             port,
-        } => format!("https://{}:{}", host, port),
+        } => {
+            if port == &443 {
+                format!("https://{}", host)
+            } else {
+                format!("https://{}:{}", host, port)
+            }
+        }
     }
 }
 
