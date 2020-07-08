@@ -131,7 +131,10 @@ async fn main() {
         concurrency_amount
     );
 
-    let client = Client::builder().timeout(timeout_duration).build().unwrap();
+    let client = Client::builder()
+        .connect_timeout(timeout_duration)
+        .build()
+        .unwrap();
 
     let stdin = io::stdin();
     let result = stream::iter(stdin.lock().lines())
