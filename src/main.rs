@@ -226,22 +226,36 @@ mod tests {
 
     #[test]
     fn test_parse_probe_valid_http() {
-        assert_eq!(parse_probes(vec!["http:8080"]), (vec![Probe::new_http(8080)], vec![]));
+        assert_eq!(
+            parse_probes(vec!["http:8080"]),
+            (vec![Probe::new_http(8080)], vec![])
+        );
     }
 
     #[test]
     fn test_parse_probe_valid_https() {
-        assert_eq!(parse_probes(vec!["https:8080"]), (vec![Probe::new_https(8080)], vec![]));
+        assert_eq!(
+            parse_probes(vec!["https:8080"]),
+            (vec![Probe::new_https(8080)], vec![])
+        );
     }
 
     #[test]
     fn test_parse_probe_invalid_port() {
-        assert_eq!(parse_probes(vec!["https:65536"]), (vec![], 
-            vec![String::from("Error parsing probe: https:65536")]));
+        assert_eq!(
+            parse_probes(vec!["https:65536"]),
+            (
+                vec![],
+                vec![String::from("Error parsing probe: https:65536")]
+            )
+        );
     }
 
     #[test]
     fn test_parse_probe_invalid_protocol() {
-        assert_eq!(parse_probes(vec!["ftp:21"]), (vec![], 
-            vec![String::from("Error parsing probe: ftp:21")]));
-    }}
+        assert_eq!(
+            parse_probes(vec!["ftp:21"]),
+            (vec![], vec![String::from("Error parsing probe: ftp:21")])
+        );
+    }
+}
