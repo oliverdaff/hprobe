@@ -8,31 +8,58 @@ use reqwest::Client;
 use std::io::{self, BufRead};
 use std::time::Duration;
 
+/// A port number for the probe
 type Port = u16;
+
+/// The two possible protocols for a probe
 #[derive(Debug, Copy, Clone)]
 enum Protocol {
     Http,
     Https,
 }
 
+/// A probe is composed of a probe and a protocol.
 #[derive(Debug, Copy, Clone)]
 struct Probe {
-    port: Port,
     protocol: Protocol,
+    port: Port,
+}
+
+impl Probe {
+    /// Create a new probe from a protocol and port
+    fn new(protocol: Protocol, port: Port) -> Probe {
+        Probe { protocol, port }
+    }
+
+    /// Create a new http probe for the port.
+    fn new_http(port: Port) -> Probe {
+        Probe::new(Protocol::Http, port)
+    }
+
+    /// Create a new https probe for the port.
+    fn new_https(port: Port) -> Probe {
+        Probe::new(Protocol::Https, port)
+    }
+
+    /// Returns true if the port is the default for the protocol.
+    fn is_default_port(&self) -> bool {
+        match self {
+            Probe {
+                protocol: Protocol::Http,
+                port: 80,
+            } => true,
+            Probe {
+                protocol: Protocol::Https,
+                port: 443,
+            } => true,
+            _ => false,
+        }
+    }
 }
 
 #[tokio::main]
 async fn main() {
-    let defatul_probes: Vec<Probe> = vec![
-        Probe {
-            protocol: Protocol::Http,
-            port: 80,
-        },
-        Probe {
-            protocol: Protocol::Https,
-            port: 443,
-        },
-    ];
+    let defatul_probes: Vec<Probe> = vec![Probe::new_http(80), Probe::new_https(443)];
 
     let command = App::new("hprobe")
         .version("0.1")
@@ -142,51 +169,54 @@ async fn main() {
 }
 
 fn probe_to_url(host: &str, probe: &Probe) -> String {
-    match probe {
-        Probe {
-            protocol: Protocol::Http,
-            port,
-        } => {
-            if port == &80 {
-                format!("http://{}", host)
-            } else {
-                format!("http://{}:{}", host, port)
-            }
-        }
-        Probe {
-            protocol: Protocol::Https,
-            port,
-        } => {
-            if port == &443 {
-                format!("https://{}", host)
-            } else {
-                format!("https://{}:{}", host, port)
-            }
-        }
+    match probe.protocol {
+        Protocol::Http if probe.is_default_port() => format!("http://{}", host),
+        Protocol::Http => format!("http://{}:{}", host, probe.port),
+        Protocol::Https if probe.is_default_port() => format!("https://{}", host),
+        Protocol::Https => format!("https://{}:{}", host, probe.port),
     }
 }
 
 /// Default is to use http:80 and https:443
 fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
-        let (probes, errors): (Vec<_>, Vec<_>) = probes
+    let (probes, errors): (Vec<_>, Vec<_>) = probes
         .iter()
-        .map(|p|{
-            let parts: Vec<&str> = p.split(":").collect();
+        .map(|p| {
+            let parts: Vec<&str> = p.split(':').collect();
             if parts.len() == 2 {
                 match parts[1].parse::<u16>() {
-                    Ok(port) if parts[0] == "http" => Ok(
-                        Probe{ protocol:Protocol::Http, port}
-                    ),
-                    Ok(port) if parts[0] == "https" => Ok(
-                        Probe{ protocol:Protocol::Https, port}
-                    ),
-                    _ => Err(format!("Error parsing probe: {}", p))
+                    Ok(port) if parts[0] == "http" => Ok(Probe::new_http(port)),
+                    Ok(port) if parts[0] == "https" => Ok(Probe::new_https(port)),
+                    _ => Err(format!("Error parsing probe: {}", p)),
                 }
             } else {
                 Err(format!("Error parsing probe: {}", p))
             }
-        }).partition(Result::is_ok);
-        let probes: Vec<_> = probes.into_iter().map(Result::unwrap).collect();
-        let errors: Vec<_> = errors.into_iter().map(Result::unwrap_err).collect();
-        (probes, errors)
+        })
+        .partition(Result::is_ok);
+    let probes: Vec<_> = probes.into_iter().map(Result::unwrap).collect();
+    let errors: Vec<_> = errors.into_iter().map(Result::unwrap_err).collect();
+    (probes, errors)
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_probe_to_url_default_http() {
+        assert_eq!(
+            probe_to_url("demo.com", &Probe::new_http(80)),
+            "http://demo.com"
+        );
+    }
+
+    #[test]
+    fn test_probe_to_url_default_https() {
+        assert_eq!(
+            probe_to_url("demo.com", &Probe::new_https(443)),
+            "https://demo.com"
+        );
+    }
 }
