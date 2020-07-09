@@ -12,14 +12,14 @@ use std::time::Duration;
 type Port = u16;
 
 /// The two possible protocols for a probe
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum Protocol {
     Http,
     Https,
 }
 
 /// A probe is composed of a probe and a protocol.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 struct Probe {
     protocol: Protocol,
     port: Port,
@@ -168,6 +168,8 @@ async fn main() {
         .await;
 }
 
+/// Format the host and probe into a URL, dropping the
+/// port number if it is the default for th protocol.
 fn probe_to_url(host: &str, probe: &Probe) -> String {
     match probe.protocol {
         Protocol::Http if probe.is_default_port() => format!("http://{}", host),
@@ -177,7 +179,9 @@ fn probe_to_url(host: &str, probe: &Probe) -> String {
     }
 }
 
-/// Default is to use http:80 and https:443
+/// Parse the probes passed from the command line
+/// the format is `<protocol>:<port>` where protocol can be http or https,
+/// and port can be a number between 0 and 65535.
 fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
     let (probes, errors): (Vec<_>, Vec<_>) = probes
         .iter()
@@ -219,4 +223,25 @@ mod tests {
             "https://demo.com"
         );
     }
-}
+
+    #[test]
+    fn test_parse_probe_valid_http() {
+        assert_eq!(parse_probes(vec!["http:8080"]), (vec![Probe::new_http(8080)], vec![]));
+    }
+
+    #[test]
+    fn test_parse_probe_valid_https() {
+        assert_eq!(parse_probes(vec!["https:8080"]), (vec![Probe::new_https(8080)], vec![]));
+    }
+
+    #[test]
+    fn test_parse_probe_invalid_port() {
+        assert_eq!(parse_probes(vec!["https:65536"]), (vec![], 
+            vec![String::from("Error parsing probe: https:65536")]));
+    }
+
+    #[test]
+    fn test_parse_probe_invalid_protocol() {
+        assert_eq!(parse_probes(vec!["ftp:21"]), (vec![], 
+            vec![String::from("Error parsing probe: ftp:21")]));
+    }}
