@@ -1,11 +1,9 @@
 /// Read list of domain names from the command line or a file
 extern crate clap;
 extern crate futures;
-use regex::Regex;
 
 use clap::{App, Arg};
 use futures::{stream, StreamExt};
-use lazy_static::lazy_static;
 use reqwest::Client;
 use std::io::{self, BufRead};
 use std::time::Duration;
@@ -170,34 +168,25 @@ fn probe_to_url(host: &str, probe: &Probe) -> String {
 
 /// Default is to use http:80 and https:443
 fn parse_probes(probes: Vec<&str>) -> (Vec<Probe>, Vec<String>) {
-    lazy_static! {
-        static ref RE: Regex =
-            Regex::new(r"(http|https):\b([1-9]\d{0,3}|[1-6][0-5][0-5][0-3][0-5])\b").unwrap();
-    }
-    let (probes, errors): (Vec<_>, Vec<_>) = probes
+        let (probes, errors): (Vec<_>, Vec<_>) = probes
         .iter()
-        .map(|p| match RE.captures(p) {
-            Some(cap) => {
-                let groups = (cap.get(1), cap.get(2));
-                match groups {
-                    (Some(prot), Some(port)) if prot.as_str() == "http" => Ok(Probe {
-                        protocol: Protocol::Http,
-                        port: port.as_str().parse().unwrap(),
-                    }),
-                    (Some(prot), Some(port)) if prot.as_str() == "https" => Ok(Probe {
-                        protocol: Protocol::Https,
-                        port: port.as_str().parse().unwrap(),
-                    }),
-                    _ => Err(format!("Error parsing probe: {}", p)),
+        .map(|p|{
+            let parts: Vec<&str> = p.split(":").collect();
+            if parts.len() == 2 {
+                match parts[1].parse::<u16>() {
+                    Ok(port) if parts[0] == "http" => Ok(
+                        Probe{ protocol:Protocol::Http, port}
+                    ),
+                    Ok(port) if parts[0] == "https" => Ok(
+                        Probe{ protocol:Protocol::Https, port}
+                    ),
+                    _ => Err(format!("Error parsing probe: {}", p))
                 }
-            }
-            None => {
-                println!("{:?}", RE.captures(p));
+            } else {
                 Err(format!("Error parsing probe: {}", p))
             }
-        })
-        .partition(Result::is_ok);
-    let probes: Vec<_> = probes.into_iter().map(Result::unwrap).collect();
-    let errors: Vec<_> = errors.into_iter().map(Result::unwrap_err).collect();
-    (probes, errors)
+        }).partition(Result::is_ok);
+        let probes: Vec<_> = probes.into_iter().map(Result::unwrap).collect();
+        let errors: Vec<_> = errors.into_iter().map(Result::unwrap_err).collect();
+        (probes, errors)
 }
