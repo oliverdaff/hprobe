@@ -103,6 +103,14 @@ async fn main() {
                 .required(false)
                 .default_value("20"),
         )
+        .arg(
+            Arg::with_name("proxy_all")
+                .long("proxy-all")
+                .value_name("PROXY")
+                .help("The url of the proxy to for all requests.")
+                .takes_value(true)
+                .required(false),
+        )
         .get_matches();
 
     let probe_args: Option<Vec<_>> = command.values_of("probes").map(|x| x.collect());
@@ -143,10 +151,21 @@ async fn main() {
         probes.extend_from_slice(&defatul_probes)
     }
 
-    let client = Client::builder()
-        .connect_timeout(timeout_duration)
-        .build()
-        .unwrap();
+    let mut client_builder = Client::builder().connect_timeout(timeout_duration);
+
+    if let Some(url) = command.value_of("proxy_all") {
+        match reqwest::Proxy::all(url) {
+            Ok(proxy) => {
+                client_builder = client_builder.proxy(proxy);
+                ()
+            }
+            Err(_) => {
+                println!("Error parsing proxy: {}", url);
+                std::process::exit(1)
+            }
+        }
+    };
+    let client = client_builder.build().unwrap();
 
     let stdin = io::stdin();
     stream::iter(stdin.lock().lines())

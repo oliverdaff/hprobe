@@ -1,14 +1,24 @@
 [package]
 name = "hprobe"
 version = "0.1.0"
+description = "A async http probe utility."
+keywords = ["http", "probe", "network"]
 authors = ["Oliver Daff <oliverdaff@users.noreply.github.com>"]
+readme = "README.md"
+license = "MIT"
 edition = "2018"
+autotests = true
 
 [dependencies]
 clap = "2.33"
 reqwest = { version = "0.10" }
 tokio = { version = "0.2", features = ["full"] }
 futures = "0.3"
+
+[features]
+default = []
+
+trust-dns = ["reqwest/trust-dns"]
 
 [profile.release]
 opt-level = 'z'  # Optimize for size.

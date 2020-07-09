@@ -36,6 +36,7 @@ https://domain3.com
 ```bash
 hprobe --help
 
+hprobe 0.1
 A fast http probe
 
 USAGE:
@@ -49,8 +50,16 @@ FLAGS:
 OPTIONS:
     -c, --concurrency <CONCURRENCY>    The number of concurrent requests [default: 20]
     -p, --probe <PROBE>...             protocol port pair <http|https>:<port>
+        --proxy-all <PROXY>            The url of the proxy to for all requests.
     -t, --timeout <TIMEOUT>            The timeout for the connect phase (ms) [default: 1000]
 ```
+
+### Proxies
+Hprobe will look in environment variables to set HTTP or HTTPS proxies.
+
+`HTTP_PROXY` or `http_proxy` provide http proxies for http connections while `HTTPS_PROXY` or `https_proxy` provide HTTPS proxies for HTTPS connections.
+
+The `--proxy-all` flag can be used to proxy all requests on the command line.
 
 ## Tests
 The tests can be invoked with `cargo test`.
