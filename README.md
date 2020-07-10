@@ -2,6 +2,8 @@
 
 Takes a list of domains and probes for working http and http services.
 
+The project is written in Rust, using asynchronous requests making it light weight and fast.
+
 ## Installation
 While this library is in initial state of development installation is done using cargo.
 
@@ -45,12 +47,12 @@ USAGE:
 FLAGS:
     -k, --insecure            Accept invalid certificates.
     -h, --help                Prints help information
-    -s, --suppress_default    do not process the default http and https ports
+    -s, --suppress-default    Do not process the default http and https ports
     -V, --version             Prints version information
 
 OPTIONS:
     -c, --concurrency <CONCURRENCY>    The number of concurrent requests [default: 20]
-    -p, --probe <PROBE>...             protocol port pair <http|https>:<port>
+    -p, --probe <PROBE>...             Protocol port pair <http|https>:<port>
         --proxy-all <PROXY_ALL>        The url of the proxy to for all requests.
         --proxy-http <PROXY_HTTP>      The url of the proxy to for http requests.
         --proxy-https <PROXY_HTTPS>    The url of the proxy to for https requests.

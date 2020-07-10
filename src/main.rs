@@ -70,7 +70,7 @@ async fn main() {
                 .short("p")
                 .long("probe")
                 .value_name("PROBE")
-                .help("protocol port pair <http|https>:<port>")
+                .help("Protocol port pair <http|https>:<port>")
                 .takes_value(true)
                 .multiple(true)
                 .required(false),
@@ -78,7 +78,7 @@ async fn main() {
         .arg(
             Arg::with_name("suppress_default")
                 .short("s")
-                .long("suppress_default")
+                .long("Suppress-default")
                 .value_name("SUPPRESS")
                 .help("do not process the default http and https ports")
                 .takes_value(false)
