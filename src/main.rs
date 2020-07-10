@@ -120,13 +120,10 @@ async fn main() {
 
     let concurrency_amount = match concurrency.parse::<usize>() {
         Ok(c) => c,
-        Err(_e) => {
-            println!(
-                "-c --concurrency parameter was not a integer: {}",
-                concurrency
-            );
-            std::process::exit(1);
-        }
+        Err(e) => panic!(
+            "-c --concurrency parameter was not a integer: {}, {}",
+            concurrency, e
+        ),
     };
 
     let (mut probes, errors) = match probe_args {
@@ -135,16 +132,12 @@ async fn main() {
     };
 
     if !errors.is_empty() {
-        println!("Invalid Probe arguments {:?}", errors);
-        std::process::exit(1);
+        panic!("Invalid Probe arguments {:?}", errors);
     }
 
     let timeout_duration = match timeout.parse::<u64>().map(Duration::from_millis) {
         Ok(t) => t,
-        Err(_) => {
-            println!("-t --timeout parameter was not a number: {}", timeout);
-            std::process::exit(1);
-        }
+        Err(_) => panic!("-t --timeout parameter was not a number: {}", timeout),
     };
 
     if run_default {
@@ -155,14 +148,8 @@ async fn main() {
 
     if let Some(url) = command.value_of("proxy_all") {
         match reqwest::Proxy::all(url) {
-            Ok(proxy) => {
-                client_builder = client_builder.proxy(proxy);
-                ()
-            }
-            Err(_) => {
-                println!("Error parsing proxy: {}", url);
-                std::process::exit(1)
-            }
+            Ok(proxy) => client_builder = client_builder.proxy(proxy),
+            Err(_) => panic!("Error parsing proxy: {}", url),
         }
     };
     let client = client_builder.build().unwrap();
