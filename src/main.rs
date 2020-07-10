@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "cargo-clippy", allow(clippy::match_wild_err_arm))]
 /// Read list of domain names from the command line or a file
 extern crate clap;
 extern crate futures;
@@ -138,9 +139,9 @@ async fn main() {
 
     let concurrency_amount = match concurrency.parse::<usize>() {
         Ok(c) => c,
-        Err(e) => panic!(
-            "-c --concurrency parameter was not a integer: {}, {}",
-            concurrency, e
+        Err(_) => panic!(
+            "-c --concurrency parameter was not a integer: {}",
+            concurrency
         ),
     };
 
@@ -155,7 +156,7 @@ async fn main() {
 
     let timeout_duration = match timeout.parse::<u64>().map(Duration::from_millis) {
         Ok(t) => t,
-        Err(_) => panic!("-t --timeout parameter was not a number: {}", timeout),
+        Err(_) => panic!("-t --timeout parameter was not a number: {}, ", timeout),
     };
 
     if run_default {
