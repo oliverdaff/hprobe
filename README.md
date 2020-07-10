@@ -50,7 +50,9 @@ FLAGS:
 OPTIONS:
     -c, --concurrency <CONCURRENCY>    The number of concurrent requests [default: 20]
     -p, --probe <PROBE>...             protocol port pair <http|https>:<port>
-        --proxy-all <PROXY>            The url of the proxy to for all requests.
+        --proxy-all <PROXY_ALL>        The url of the proxy to for all requests.
+        --proxy-http <PROXY_HTTP>      The url of the proxy to for http requests.
+        --proxy-https <PROXY_HTTPS>    The url of the proxy to for https requests.
     -t, --timeout <TIMEOUT>            The timeout for the connect phase (ms) [default: 1000]
 ```
 
@@ -60,6 +62,9 @@ Hprobe will look in environment variables to set HTTP or HTTPS proxies.
 `HTTP_PROXY` or `http_proxy` provide http proxies for http connections while `HTTPS_PROXY` or `https_proxy` provide HTTPS proxies for HTTPS connections.
 
 The `--proxy-all` flag can be used to proxy all requests on the command line.
+The `--proxy-http` flag can be used to proxy all http requests on the command line, but can not be used with `--proxy-all`.
+The `--proxy-https` flag can be used to proxy all https requests on the command line, but can not be used with `--proxy-all`.
+.
 
 ## Tests
 The tests can be invoked with `cargo test`.
