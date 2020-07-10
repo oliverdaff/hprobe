@@ -137,7 +137,7 @@ async fn main() {
                 .help("Accept invalid certificates.")
                 .takes_value(false)
                 .required(false),
-        )        
+        )
         .arg(
             Arg::with_name("user_agent")
                 .short("u")
