@@ -151,7 +151,7 @@ async fn main() {
     };
 
     if !errors.is_empty() {
-        panic!("Invalid Probe arguments {:?}", errors);
+        panic!("Invalid Probe arguments -p {:?}", errors);
     }
 
     let timeout_duration = match timeout.parse::<u64>().map(Duration::from_millis) {
@@ -168,19 +168,19 @@ async fn main() {
     if let Some(url) = command.value_of("proxy_all") {
         match reqwest::Proxy::all(url) {
             Ok(proxy) => client_builder = client_builder.proxy(proxy),
-            Err(_) => panic!("Error parsing proxy all: {}", url),
+            Err(_) => panic!("Error parsing --proxy-all: {}", url),
         }
     };
     if let Some(url) = command.value_of("proxy_http") {
         match reqwest::Proxy::http(url) {
             Ok(proxy) => client_builder = client_builder.proxy(proxy),
-            Err(_) => panic!("Error parsing proxy http: {}", url),
+            Err(_) => panic!("Error parsing --proxy-http: {}", url),
         }
     };
     if let Some(url) = command.value_of("proxy_https") {
         match reqwest::Proxy::https(url) {
             Ok(proxy) => client_builder = client_builder.proxy(proxy),
-            Err(_) => panic!("Error parsing proxy https: {}", url),
+            Err(_) => panic!("Error parsing -proxy-https: {}", url),
         }
     };
 
