@@ -130,6 +130,14 @@ async fn main() {
                 .conflicts_with("proxy_all")
                 .required(false),
         )
+        .arg(
+            Arg::with_name("accept_invalid_certs")
+                .short("k")
+                .long("insecure")
+                .help("Accept invalid certificates.")
+                .takes_value(false)
+                .required(false),
+        )        
         .get_matches();
 
     let probe_args: Option<Vec<_>> = command.values_of("probes").map(|x| x.collect());
@@ -184,6 +192,10 @@ async fn main() {
         }
     };
 
+    if command.is_present("accept_invalid_certs") {
+        client_builder = client_builder.danger_accept_invalid_certs(true)
+    }
+
     let client = client_builder.build().unwrap();
 
     let stdin = io::stdin();
@@ -199,7 +211,7 @@ async fn main() {
         .buffer_unordered(concurrency_amount)
         .for_each(|b| async {
             match b {
-                Ok((r, _res)) => println!("{:?}", r),
+                Ok((r, _res)) => println!("{}", r),
                 Err(e) => eprintln!("Got an error: {}", e),
             }
         })

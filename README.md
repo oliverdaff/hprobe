@@ -43,6 +43,7 @@ USAGE:
     hprobe [FLAGS] [OPTIONS]
 
 FLAGS:
+    -k, --insecure            Accept invalid certificates.
     -h, --help                Prints help information
     -s, --suppress_default    do not process the default http and https ports
     -V, --version             Prints version information
@@ -64,7 +65,9 @@ Hprobe will look in environment variables to set HTTP or HTTPS proxies.
 The `--proxy-all` flag can be used to proxy all requests on the command line.
 The `--proxy-http` flag can be used to proxy all http requests on the command line, but can not be used with `--proxy-all`.
 The `--proxy-https` flag can be used to proxy all https requests on the command line, but can not be used with `--proxy-all`.
-.
+
+### Invalid Certificates
+`-k, --insecure` using either of these two flags means any certificate for any site will be trusted for use. This includes expired certificates.
 
 ## Tests
 The tests can be invoked with `cargo test`.
