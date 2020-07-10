@@ -55,6 +55,7 @@ OPTIONS:
         --proxy-http <PROXY_HTTP>      The url of the proxy to for http requests.
         --proxy-https <PROXY_HTTPS>    The url of the proxy to for https requests.
     -t, --timeout <TIMEOUT>            The timeout for the connect phase (ms) [default: 1000]
+    -u, --user_agent <user_agent>      Set the requests USER-AGENT header
 ```
 
 ### Proxies
@@ -68,6 +69,9 @@ The `--proxy-https` flag can be used to proxy all https requests on the command 
 
 ### Invalid Certificates
 `-k, --insecure` using either of these two flags means any certificate for any site will be trusted for use. This includes expired certificates.
+
+### Headers
+`-u --user-agent` set the user agent for the request.
 
 ## Tests
 The tests can be invoked with `cargo test`.

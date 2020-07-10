@@ -138,6 +138,15 @@ async fn main() {
                 .takes_value(false)
                 .required(false),
         )        
+        .arg(
+            Arg::with_name("user_agent")
+                .short("u")
+                .long("user-agent")
+                .required(false)
+                .help("Set the requests USER-AGENT header")
+                .takes_value(true)
+                .required(false),
+        )
         .get_matches();
 
     let probe_args: Option<Vec<_>> = command.values_of("probes").map(|x| x.collect());
@@ -192,6 +201,9 @@ async fn main() {
         }
     };
 
+    if let Some(user_agent) = command.value_of("user_agent") {
+        client_builder = client_builder.user_agent(user_agent)
+    };
     if command.is_present("accept_invalid_certs") {
         client_builder = client_builder.danger_accept_invalid_certs(true)
     }
