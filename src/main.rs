@@ -106,9 +106,27 @@ async fn main() {
         .arg(
             Arg::with_name("proxy_all")
                 .long("proxy-all")
-                .value_name("PROXY")
+                .value_name("PROXY_ALL")
                 .help("The url of the proxy to for all requests.")
                 .takes_value(true)
+                .required(false),
+        )
+        .arg(
+            Arg::with_name("proxy_http")
+                .long("proxy-http")
+                .value_name("PROXY_HTTP")
+                .help("The url of the proxy to for http requests.")
+                .takes_value(true)
+                .conflicts_with("proxy_all")
+                .required(false),
+        )
+        .arg(
+            Arg::with_name("proxy_https")
+                .long("proxy-https")
+                .value_name("PROXY_HTTPS")
+                .help("The url of the proxy to for https requests.")
+                .takes_value(true)
+                .conflicts_with("proxy_all")
                 .required(false),
         )
         .get_matches();
@@ -149,9 +167,22 @@ async fn main() {
     if let Some(url) = command.value_of("proxy_all") {
         match reqwest::Proxy::all(url) {
             Ok(proxy) => client_builder = client_builder.proxy(proxy),
-            Err(_) => panic!("Error parsing proxy: {}", url),
+            Err(_) => panic!("Error parsing proxy all: {}", url),
         }
     };
+    if let Some(url) = command.value_of("proxy_http") {
+        match reqwest::Proxy::http(url) {
+            Ok(proxy) => client_builder = client_builder.proxy(proxy),
+            Err(_) => panic!("Error parsing proxy http: {}", url),
+        }
+    };
+    if let Some(url) = command.value_of("proxy_https") {
+        match reqwest::Proxy::https(url) {
+            Ok(proxy) => client_builder = client_builder.proxy(proxy),
+            Err(_) => panic!("Error parsing proxy https: {}", url),
+        }
+    };
+
     let client = client_builder.build().unwrap();
 
     let stdin = io::stdin();
