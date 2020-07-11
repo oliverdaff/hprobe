@@ -62,7 +62,7 @@ impl Probe {
 async fn main() {
     let defatul_probes: Vec<Probe> = vec![Probe::new_http(80), Probe::new_https(443)];
 
-    let command = App::new("hprobe")
+    let app = App::new("hprobe")
         .version("0.1")
         .about("A fast http probe")
         .arg(
@@ -147,7 +147,18 @@ async fn main() {
                 .takes_value(true)
                 .required(false),
         )
-        .get_matches();
+        .arg(
+            Arg::with_name("async-dns")
+                .hidden(!cfg!(feature = "async-dns"))
+                .short("a")
+                .long("async-dns")
+                .required(false)
+                .help("Use asynchronous DNS resolution")
+                .takes_value(false)
+                .required(false),
+        );
+
+    let command = app.get_matches();
 
     let probe_args: Option<Vec<_>> = command.values_of("probes").map(|x| x.collect());
     let run_default = !command.is_present("suppress_default");
@@ -204,8 +215,13 @@ async fn main() {
     if let Some(user_agent) = command.value_of("user_agent") {
         client_builder = client_builder.user_agent(user_agent)
     };
-    if command.is_present("accept_invalid_certs") {
-        client_builder = client_builder.danger_accept_invalid_certs(true)
+
+    client_builder =
+        client_builder.danger_accept_invalid_certs(command.is_present("accept_invalid_certs"));
+
+    #[cfg(feature = "async-dns")]
+    {
+        client_builder = client_builder.trust_dns(command.is_present("async-dns"));
     }
 
     let client = client_builder.build().unwrap();

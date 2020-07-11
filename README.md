@@ -75,6 +75,10 @@ The `--proxy-https` flag can be used to proxy all https requests on the command 
 ### Headers
 `-u --user-agent` set the user agent for the request.
 
+### DNS
+The DNS resolution uses the system configuration.  Compiling with the feature flag `--async-dns` will enable the
+`-a, --async-dns` flag which will enable asynchronous DNS resolution.
+
 ## Tests
 The tests can be invoked with `cargo test`.
 
