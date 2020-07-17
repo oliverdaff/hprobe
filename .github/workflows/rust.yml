@@ -18,14 +18,14 @@ jobs:
           override: true
 
       - name: Build
-        run: cargo build --all --release && strip target/release/gistr && mv target/release/gistr target/release/gistr_amd64
+        run: cargo build --all --release && strip target/release/hprobe && mv target/release/hprobe target/release/hprobe_amd64
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            target/release/gistr_amd64
+            target/release/hprobe_amd64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -50,7 +50,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: target/release/gistr.exe
+          files: target/release/hprobe.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -70,13 +70,13 @@ jobs:
           override: true
 
       - name: Build for mac
-        run: cargo build --all --release && strip target/release/gistr && mv target/release/gistr target/release/gistr_darwin
+        run: cargo build --all --release && strip target/release/hprobe && mv target/release/hprobe target/release/hprobe_darwin
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            target/release/gistr_darwin
+            target/release/hprobe_darwin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
