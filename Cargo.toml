@@ -2,12 +2,17 @@
 name = "hprobe"
 version = "0.1.0"
 description = "A async http probe utility."
-keywords = ["http", "probe", "network"]
+keywords = ["http", "probe", "network", "cli"]
+categories = ["command-line-utilities"]
 authors = ["Oliver Daff <oliverdaff@users.noreply.github.com>"]
 readme = "README.md"
 license = "MIT"
 edition = "2018"
 autotests = true
+homepage = "https://github.com/oliverdaff/hprobe"
+repository = "https://github.com/oliverdaff/hprobe"
+
+
 
 [dependencies]
 clap = "2.33"
