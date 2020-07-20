@@ -1,10 +1,12 @@
-# hprobe [![CircleCI](https://circleci.com/gh/oliverdaff/hprobe.svg?style=shield)](https://circleci.com/gh/oliverdaff/hprobe) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/oliverdaff/hprobe?style=plastic)
+# hprobe [![CircleCI](https://circleci.com/gh/oliverdaff/hprobe.svg?style=shield)](https://circleci.com/gh/oliverdaff/hprobe) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/oliverdaff/hprobe?style=plastic)](https://github.com/oliverdaff/hprobe/releases/latest)
 Takes a list of domains and probes for working http and http services.
 
 The project is written in Rust, using asynchronous requests making it light weight and fast.
 
 ## Installation
-While this library is in initial state of development installation is done using cargo.
+The latest release binaries can be downloaded from Github https://github.com/oliverdaff/hprobe/releases/latest .
+
+*   []
 
 ```bash
 git checkout https://github.com/oliverdaff/hprobe
