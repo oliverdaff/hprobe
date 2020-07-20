@@ -1,5 +1,4 @@
-# hprobe [![CircleCI](https://circleci.com/gh/oliverdaff/hprobe.svg?style=shield)](https://circleci.com/gh/oliverdaff/hprobe)
-
+# hprobe [![CircleCI](https://circleci.com/gh/oliverdaff/hprobe.svg?style=shield)](https://circleci.com/gh/oliverdaff/hprobe) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/oliverdaff/hprobe?style=plastic)
 Takes a list of domains and probes for working http and http services.
 
 The project is written in Rust, using asynchronous requests making it light weight and fast.
