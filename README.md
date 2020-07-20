@@ -6,7 +6,13 @@ The project is written in Rust, using asynchronous requests making it light weig
 ## Installation
 The latest release binaries can be downloaded from Github https://github.com/oliverdaff/hprobe/releases/latest .
 
-*   []
+*   [Windows](https://github.com/oliverdaff/hprobe/releases/download/v0.1.0/hprobe.exe)
+*   [Linux](https://github.com/oliverdaff/hprobe/releases/download/v0.1.0/hprobe_amd64)
+*   [Mac](https://github.com/oliverdaff/hprobe/releases/download/v0.1.0/hprobe_darwin)
+
+### Cargo
+
+Install latest from GitHub using Cargo.
 
 ```bash
 git checkout https://github.com/oliverdaff/hprobe
