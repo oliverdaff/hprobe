@@ -86,6 +86,29 @@ The `--proxy-https` flag can be used to proxy all https requests on the command 
 The DNS resolution uses the system configuration.  Compiling with the feature flag `--async-dns` will enable the
 `-a, --async-dns` flag which will enable asynchronous DNS resolution.
 
+## Docker
+Build the docker container by first using `cargo cross` to build the static binaries.
+
+```shell
+cargo install cross
+cross build --target x86_64-unknown-linux-musl --release
+```
+
+Then build the docker container
+
+```
+docker build -t hprobe .
+```
+
+Run the container using:
+*    `-i` flag to map stdin to into the container.
+*    `--rm` to remove the container on exit
+*   `2>/dev/null` sterr redirection to hide failed connection detail.
+
+```
+cat domains.txt | docker run -i --rm hprobe <args>
+```
+
 ## Tests
 The tests can be invoked with `cargo test`.
 

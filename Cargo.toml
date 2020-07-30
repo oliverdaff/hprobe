@@ -13,17 +13,17 @@ homepage = "https://github.com/oliverdaff/hprobe"
 repository = "https://github.com/oliverdaff/hprobe"
 
 
-
 [dependencies]
 clap = "2.33"
-reqwest = { version = "0.10" }
-tokio = { version = "0.2", features = ["full"] }
+reqwest = { version = "0.10", default-features = false, features=["rustls-tls"]}
+tokio = { version = "0.2", features = ["macros"] }
 futures = "0.3"
+
 
 [features]
 default = []
-
 async-dns = ["reqwest/trust-dns"]
+
 
 [profile.release]
 opt-level = 'z'  # Optimize for size.
